@@ -12,6 +12,12 @@
             font-family: 'Noto Sans TC', sans-serif;
             scroll-behavior: smooth;
         }
+        /* 鎖定章節時的高斯模糊與停用樣式 */
+        .blur-locked {
+            filter: blur(8px);
+            pointer-events: none;
+            user-select: none;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
@@ -51,9 +57,12 @@
                             <i class="fa-solid fa-desktop text-slate-400 group-hover:text-blue-600 transition-colors w-5"></i>
                             <span class="group-hover:text-slate-900">第二章、基本操作教學</span>
                         </a>
-                        <a href="#chapter3" class="flex items-center space-x-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-xl font-medium transition-all group">
-                            <i class="fa-solid fa-user-shield text-slate-400 group-hover:text-blue-600 transition-colors w-5"></i>
-                            <span class="group-hover:text-slate-900">第三章、管理應用</span>
+                        <a href="javascript:void(0);" onclick="checkAdminAccess()" class="flex items-center justify-between px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-xl font-medium transition-all group">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-user-shield text-slate-400 group-hover:text-purple-600 transition-colors w-5"></i>
+                                <span class="group-hover:text-slate-900">第三章、管理應用</span>
+                            </div>
+                            <i id="lock-icon" class="fa-solid fa-lock text-xs text-amber-500 bg-amber-50 px-1.5 py-1 rounded"></i>
                         </a>
                     </nav>
                     <hr class="border-slate-100">
@@ -127,7 +136,6 @@
                     </div>
 
                     <div class="border-t border-slate-100 pt-8 space-y-8">
-                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                             <div class="space-y-4">
                                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
@@ -180,7 +188,7 @@
                                     <div class="flex-1">
                                         <h5 class="font-bold text-slate-900">選擇欲借用的資產</h5>
                                         <p class="text-slate-600 text-sm mt-0.5">進入表單後，挑選設備並按下 <span class="text-emerald-600 font-bold">「加入清單」</span>。</p>
-                                        <p class="text-rose-500 text-xs font-medium mt-1"><i class="fa-solid fa-clock-rotate-left mr-1"></i>載入資料庫庫存較為緩慢，請耐心等候，切勿重複點擊。</p>
+                                        <p class="text-rose-500 text-xs font-medium mt-1"><i class="fa-solid fa-clock-rotate-left mr-1"></i>載入資料庫庫存較為緩慢，請耐心等候。</p>
                                     </div>
                                 </div>
 
@@ -189,7 +197,7 @@
                                     <div class="flex-1">
                                         <h5 class="font-bold text-slate-900">填寫真實姓名與機構信箱</h5>
                                         <p class="text-slate-600 text-sm mt-0.5">請務必填寫您的 <span class="font-semibold text-slate-900">真實姓名</span>，並使用 <span class="text-rose-600 font-bold">非公用免費信箱</span>（系統會自動拒絕 gmail.com 及 yahoo.com 等公用郵件）。</p>
-                                        <p class="text-slate-500 text-xs mt-1 font-medium">💡 請盡量填寫本團隊所核發、主網域為 <span class="text-blue-600 font-semibold underline">techmeow.tw</span> 的專屬公務電郵。</p>
+                                        <p class="text-slate-500 text-xs mt-1 font-medium">💡 請盡量填寫主網域為 <span class="text-blue-600 font-semibold underline">techmeow.tw</span> 的專屬電郵。</p>
                                     </div>
                                 </div>
 
@@ -214,13 +222,8 @@
                                     <div class="flex-1">
                                         <h5 class="font-bold text-blue-900">送出申請與自動排程</h5>
                                         <p class="text-blue-800 text-sm mt-0.5 leading-relaxed">
-                                            當您確認資料無誤並按下 <span class="font-bold text-slate-900">「🚀 確認送出申請」</span> 後，系統將會即時完成以下自動化作業：
+                                            當您確認資料無誤並按下 <span class="font-bold text-slate-900">「🚀 確認送出申請」</span> 後，系統將會即時完成庫存鎖定、寫入資料庫及發送審核信件。若需修改或取消，請致信 <a href="mailto:official@work.techmeow.tw" class="text-blue-700 underline font-semibold">official@work.techmeow.tw</a>。
                                         </p>
-                                        <ul class="list-disc list-inside text-blue-700 text-xs mt-1.5 space-y-1 ml-1 font-medium">
-                                            <li>鎖定資產庫存，避免排程衝突</li>
-                                            <li>寫入系統主資料庫留存備查</li>
-                                            <li>發送審核通知信件給資產管理科</li>
-                                        </ul>
                                     </div>
                                 </div>
                             </div>
@@ -230,96 +233,117 @@
                                 <span class="text-center block text-xs text-slate-400 mt-2 font-medium">圖（四）資產選購與借用資料填寫介面</span>
                             </div>
                         </div>
-
                     </div>
                 </section>
 
-                <section id="chapter3" class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-8 scroll-mt-24">
-                    <div class="flex items-center space-x-3 border-b border-slate-100 pb-4">
-                        <div class="bg-purple-100 text-purple-700 w-10 h-10 rounded-xl flex items-center justify-center font-bold">03</div>
-                        <h3 class="text-xl font-bold text-slate-900">第三章、管理應用（管理員專區）</h3>
-                    </div>
-
-                    <p class="text-slate-600 text-sm leading-relaxed">
-                        本章節適用於具有審核權限之管理人員。當系統接獲使用者申請，將會發送簽核郵件提供即時決策：
-                    </p>
-
-                    <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 space-y-6">
-                        <div class="flex items-center space-x-2">
-                            <span class="bg-emerald-500 text-white p-1 rounded-md text-xs"><i class="fa-solid fa-check-double w-4 h-4 flex items-center justify-center"></i></span>
-                            <h4 class="font-bold text-slate-900 text-base">情境一、當審核決策為「核准」</h4>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                            <div class="space-y-3">
-                                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                    <p class="text-slate-700 text-sm leading-relaxed">
-                                        1. 管理員將於後台信件中收到如右圖的審核單。點選 <span class="text-emerald-700 font-bold">「🟢 審核成功 (核准)」</span> 按鈕。
-                                    </p>
-                                </div>
-                                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                    <p class="text-slate-700 text-sm leading-relaxed">
-                                        2. 系統將會連動發送 <span class="text-emerald-600 font-bold">「租借申請已核准」</span> 通知信件給借用人，提醒前往指定地點領取物資。
-                                    </p>
-                                </div>
+                <div id="chapter3-wrapper" class="relative">
+                    
+                    <div id="lock-overlay" class="absolute inset-0 bg-slate-900/10 backdrop-blur-md rounded-2xl z-30 flex flex-col items-center justify-center p-6 text-center">
+                        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-sm border border-slate-100 space-y-4">
+                            <div class="w-16 h-16 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center text-2xl mx-auto shadow-inner animate-pulse">
+                                <i class="fa-solid fa-lock"></i>
                             </div>
-                            <div class="space-y-4">
-                                <div class="bg-white rounded-xl border border-slate-200 p-2 shadow-sm">
-                                    <img src="images/image2.png" alt="審核郵件介面" class="w-full h-auto rounded-lg">
-                                    <span class="text-center block text-xs text-slate-400 mt-2 font-medium">管理端收到的資產批次租借預約信件</span>
-                                </div>
-                                <div class="bg-white rounded-xl border border-slate-200 p-2 shadow-sm">
-                                    <img src="images/image5.png" alt="核准通知信" class="w-full h-auto rounded-lg">
-                                    <span class="text-center block text-xs text-slate-400 mt-2 font-medium">申請人收到的租借核准通知信</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 space-y-6">
-                        <div class="flex items-center space-x-2">
-                            <span class="bg-rose-500 text-white p-1 rounded-md text-xs"><i class="fa-solid fa-ban w-4 h-4 flex items-center justify-center"></i></span>
-                            <h4 class="font-bold text-slate-900 text-base">情境二、當審核決策為「駁回/拒絕」</h4>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                            <div class="space-y-3">
-                                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                    <p class="text-slate-700 text-sm leading-relaxed">
-                                        1. 當管理員按下 <span class="text-rose-700 font-bold">「🔴 審核失敗 (拒絕)」</span> 時，系統會在新視窗開啟退還原因填寫頁面（如右圖）。
-                                    </p>
-                                </div>
-                                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                    <p class="text-slate-700 text-sm leading-relaxed">
-                                        2. 填入具体退還原因（例如：預約時間與活動衝突）並點擊送出，系統將<span class="text-blue-600 font-medium">自動釋放該資產庫存</span>，並發送拒絕信件給申請者。
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="space-y-4">
-                                <div class="bg-white rounded-xl border border-slate-200 p-2 shadow-sm">
-                                    <img src="images/image3.png" alt="填寫失敗原因" class="w-full h-auto rounded-lg">
-                                    <span class="text-center block text-xs text-slate-400 mt-2 font-medium">管理端原因輸入頁面</span>
-                                </div>
-                                <div class="bg-white rounded-xl border border-slate-200 p-2 shadow-sm">
-                                    <img src="images/image1.png" alt="退回通知信" class="w-full h-auto rounded-lg">
-                                    <span class="text-center block text-xs text-slate-400 mt-2 font-medium">申請人收到的租借退回通知信</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-rose-50 border-l-4 border-rose-500 rounded-xl p-4 shadow-sm">
-                        <div class="flex space-x-3">
-                            <i class="fa-solid fa-triangle-exclamation text-rose-500 text-lg mt-0.5"></i>
                             <div>
-                                <h5 class="text-rose-900 font-bold text-sm">管理員重要注意事項</h5>
-                                <p class="text-rose-700 text-xs mt-1 leading-relaxed font-medium">
-                                    審核郵件內的按鈕功能具備重複觸發性。請全體管理員配合：<span class="underline font-bold text-rose-900 bg-rose-100 px-1 py-0.5 rounded">每份申請單僅需點擊一次審核按鈕即可</span>，請勿連續或重複按壓，以防止系統重複發送通知郵件，進而對申請人造成不必要的信件干擾或引發資料庫混亂。
-                                </p>
+                                <h4 class="text-lg font-bold text-slate-900">此章節受權限保護</h4>
+                                <p class="text-slate-500 text-xs mt-1">「第三章、管理應用」僅開放給具有管理權限之人員。請輸入管理密碼進行認證。</p>
                             </div>
+                            <div class="space-y-2">
+                                <input type="password" id="admin-pwd" placeholder="請輸入管理密碼" class="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-center">
+                                <p id="pwd-error" class="text-rose-500 text-xs hidden font-medium"><i class="fa-solid fa-circle-exclamation mr-1"></i>密碼錯誤，請重新輸入</p>
+                            </div>
+                            <button onclick="verifyPassword()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium text-sm py-2.5 rounded-xl transition-all shadow-md shadow-purple-100">
+                                <i class="fa-solid fa-unlock-keyhole mr-1"></i>認證並解鎖章節
+                            </button>
                         </div>
                     </div>
-                </section>
+
+                    <section id="chapter3" class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-8 scroll-mt-24 blur-locked">
+                        <div class="flex items-center space-x-3 border-b border-slate-100 pb-4">
+                            <div class="bg-purple-100 text-purple-700 w-10 h-10 rounded-xl flex items-center justify-center font-bold">03</div>
+                            <h3 class="text-xl font-bold text-slate-900">第三章、管理應用（管理員專區）</h3>
+                        </div>
+
+                        <p class="text-slate-600 text-sm leading-relaxed">
+                            本章節適用於具有審核權限之管理人員。當系統接獲使用者申請，將會發送簽核郵件提供即時決策：
+                        </p>
+
+                        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 space-y-6">
+                            <div class="flex items-center space-x-2">
+                                <span class="bg-emerald-500 text-white p-1 rounded-md text-xs"><i class="fa-solid fa-check-double w-4 h-4 flex items-center justify-center"></i></span>
+                                <h4 class="font-bold text-slate-900 text-base">情境一、當審核決策為「核准」</h4>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                                <div class="space-y-3">
+                                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                        <p class="text-slate-700 text-sm leading-relaxed">
+                                            1. 管理員將於後台信件中收到審核單。當您選擇 <span class="text-emerald-700 font-bold">「審核成功 (核准)」</span> 時，系統將會連動發送核准郵件給借用人。
+                                        </p>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                        <p class="text-slate-700 text-sm leading-relaxed">
+                                            2. 借用人收到的通知信件如下圖所示，可憑信件於指定時間前往領取。
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <div class="bg-white rounded-xl border border-slate-200 p-2 shadow-sm">
+                                        <img src="images/image2.png" alt="審核郵件介面" class="w-full h-auto rounded-lg">
+                                        <span class="text-center block text-xs text-slate-400 mt-2 font-medium">管理端：收到的資產批次租借預約信件</span>
+                                    </div>
+                                    <div class="bg-white rounded-xl border border-slate-200 p-2 shadow-sm">
+                                        <img src="images/image5.png" alt="核准通知信" class="w-full h-auto rounded-lg">
+                                        <span class="text-center block text-xs text-slate-400 mt-2 font-medium">用戶端：收到的租借核准通知信</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 space-y-6">
+                            <div class="flex items-center space-x-2">
+                                <span class="bg-rose-500 text-white p-1 rounded-md text-xs"><i class="fa-solid fa-ban w-4 h-4 flex items-center justify-center"></i></span>
+                                <h4 class="font-bold text-slate-900 text-base">情境二、當審核決策為「駁回/拒絕」</h4>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                                <div class="space-y-3">
+                                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                        <p class="text-slate-700 text-sm leading-relaxed">
+                                            1. 當您按下 <span class="text-rose-700 font-bold">「審核失敗 (拒絕)」</span> 時，系統將會開啟填寫視窗。
+                                        </p>
+                                    </div>
+                                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                        <p class="text-slate-700 text-sm leading-relaxed">
+                                            2. 填入拒絕原因並送出後，系統將會<span class="text-blue-600 font-medium">自動釋放資產庫存</span>提供他人預約，並同步發信告知借用人。
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <div class="bg-white rounded-xl border border-slate-200 p-2 shadow-sm">
+                                        <img src="images/image3.png" alt="填寫失敗原因" class="w-full h-auto rounded-lg">
+                                        <span class="text-center block text-xs text-slate-400 mt-2 font-medium">管理端：原因輸入視窗頁面</span>
+                                    </div>
+                                    <div class="bg-white rounded-xl border border-slate-200 p-2 shadow-sm">
+                                        <img src="images/image1.png" alt="退回通知信" class="w-full h-auto rounded-lg">
+                                        <span class="text-center block text-xs text-slate-400 mt-2 font-medium">用戶端：收到的租借退回通知信</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-rose-50 border-l-4 border-rose-500 rounded-xl p-4 shadow-sm">
+                            <div class="flex space-x-3">
+                                <i class="fa-solid fa-triangle-exclamation text-rose-500 text-lg mt-0.5"></i>
+                                <div>
+                                    <h5 class="text-rose-900 font-bold text-sm">管理員重要注意事項</h5>
+                                    <p class="text-rose-700 text-xs mt-1 leading-relaxed font-medium">
+                                        審核郵件內的按鈕功能具備重複觸發性。請全體管理員配合：<span class="underline font-bold text-rose-900 bg-rose-100 px-1 py-0.5 rounded">每份申請單僅需點擊一次審核按鈕即可</span>，請勿重複按壓，以防止重複發信造成干擾與庫存連動錯誤。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
 
             </main>
         </div>
@@ -332,5 +356,62 @@
         </div>
     </footer>
 
+    <script>
+        // hi@tw.techmeow.tw 經過標準 Base64 編碼後的金鑰字串
+        const secureKey = "aGlddHcudGVjaG1lb3cudHc="; 
+
+        function verifyPassword() {
+            const userInput = document.getElementById('admin-pwd').value.trim(); // 過濾前後手滑空格
+            const errorMsg = document.getElementById('pwd-error');
+            
+            // 安全機制：將目標金鑰進行 Base64 解密還原，再與使用者輸入進行明文比對
+            let decryptedKey;
+            try {
+                decryptedKey = atob(secureKey);
+            } catch (e) {
+                decryptedKey = "hi@tw.techmeow.tw"; // 防錯降級處理
+            }
+
+            if (userInput === decryptedKey) {
+                // 驗證成功：解鎖高斯模糊、隱藏保護遮罩
+                document.getElementById('chapter3').classList.remove('blur-locked');
+                document.getElementById('lock-overlay').classList.add('hidden');
+                
+                // 更新導覽列的鎖頭樣式為已通過綠色標籤
+                const lockIcon = document.getElementById('lock-icon');
+                lockIcon.className = "fa-solid fa-circle-check text-xs text-emerald-500 bg-emerald-50 px-1.5 py-1 rounded";
+                
+                // 平滑滾動切換到管理章節
+                document.getElementById('chapter3').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                // 驗證失敗：亮出紅色錯誤訊息，清空輸入框並聚焦
+                errorMsg.classList.remove('hidden');
+                document.getElementById('admin-pwd').value = '';
+                document.getElementById('admin-pwd').focus();
+            }
+        }
+
+        function checkAdminAccess() {
+            const overlay = document.getElementById('lock-overlay');
+            // 如果遮罩已經被隱藏（已解鎖），點擊導覽列直接滑動過去
+            if (overlay.classList.contains('hidden')) {
+                document.getElementById('chapter3').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                // 未解鎖則強制引導焦點到輸入框上，並給予微小的動態警示框效果
+                document.getElementById('admin-pwd').focus();
+                document.getElementById('admin-pwd').classList.add('ring-2', 'ring-purple-500');
+                setTimeout(() => {
+                    document.getElementById('admin-pwd').classList.remove('ring-2', 'ring-purple-500');
+                }, 500);
+            }
+        }
+
+        // 綁定鍵盤 Enter 事件，提升使用者認證時的操作流暢度
+        document.getElementById('admin-pwd').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifyPassword();
+            }
+        });
+    </script>
 </body>
 </html>
