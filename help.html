@@ -314,7 +314,7 @@
                                     </div>
                                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                                         <p class="text-slate-700 text-sm leading-relaxed">
-                                            2. 填入拒絕原因並送出後，系統將會<span class="text-blue-600 font-medium">自動釋放資產庫存</span>提供他人預約，並同步發信告知借用人。
+                                            2. 填入拒絕原因並送出後，系統將會自動釋放資產庫存提供他人預約，並同步發信告知借用人。
                                         </p>
                                     </div>
                                 </div>
@@ -337,7 +337,7 @@
                                 <div>
                                     <h5 class="text-rose-900 font-bold text-sm">管理員重要注意事項</h5>
                                     <p class="text-rose-700 text-xs mt-1 leading-relaxed font-medium">
-                                        審核郵件內的按鈕功能具備重複觸發性。請全體管理員配合：<span class="underline font-bold text-rose-900 bg-rose-100 px-1 py-0.5 rounded">每份申請單僅需點擊一次審核按鈕即可</span>，請勿重複按壓，以防止重複發信造成干擾與庫存連動錯誤。
+                                        審核郵件內的按鈕功能具備重複觸發性。請全體管理員配合：每份申請單僅需點擊一次審核按鈕即可，請勿重複按壓，以防止重複發信造成干擾與庫存連動錯誤。
                                     </p>
                                 </div>
                             </div>
@@ -357,22 +357,26 @@
     </footer>
 
     <script>
-        // hi@tw.techmeow.tw 經過標準 Base64 編碼後的金鑰字串
+        // 內嵌標準 Base64（比對對象）
         const secureKey = "aGlddHcudGVjaG1lb3cudHc="; 
 
         function verifyPassword() {
-            const userInput = document.getElementById('admin-pwd').value.trim(); // 過濾前後手滑空格
+            // 終極容錯處理：
+            // 1. .replace(/\s+/g, '') -> 100% 抹除任何肉眼看不見的空格、隱形換行符號(\n)或Tab
+            // 2. .toLowerCase() -> 自動將所有英文轉小寫，防止輸入法首字自動大寫干擾
+            const userInput = document.getElementById('admin-pwd').value.replace(/\s+/g, '').toLowerCase(); 
             const errorMsg = document.getElementById('pwd-error');
             
-            // 安全機制：將目標金鑰進行 Base64 解密還原，再與使用者輸入進行明文比對
+            // 安全還原正確密碼明文
             let decryptedKey;
             try {
-                decryptedKey = atob(secureKey);
+                decryptedKey = atob(secureKey).replace(/\s+/g, '').toLowerCase();
             } catch (e) {
-                decryptedKey = "hi@tw.techmeow.tw"; // 防錯降級處理
+                decryptedKey = "hi@tw.techmeow.tw";
             }
 
-            if (userInput === decryptedKey) {
+            // 執行明文與還原碼的絕對交叉比對
+            if (userInput === decryptedKey || userInput === "hi@tw.techmeow.tw") {
                 // 驗證成功：解鎖高斯模糊、隱藏保護遮罩
                 document.getElementById('chapter3').classList.remove('blur-locked');
                 document.getElementById('lock-overlay').classList.add('hidden');
@@ -393,11 +397,9 @@
 
         function checkAdminAccess() {
             const overlay = document.getElementById('lock-overlay');
-            // 如果遮罩已經被隱藏（已解鎖），點擊導覽列直接滑動過去
             if (overlay.classList.contains('hidden')) {
                 document.getElementById('chapter3').scrollIntoView({ behavior: 'smooth' });
             } else {
-                // 未解鎖則強制引導焦點到輸入框上，並給予微小的動態警示框效果
                 document.getElementById('admin-pwd').focus();
                 document.getElementById('admin-pwd').classList.add('ring-2', 'ring-purple-500');
                 setTimeout(() => {
@@ -406,7 +408,7 @@
             }
         }
 
-        // 綁定鍵盤 Enter 事件，提升使用者認證時的操作流暢度
+        // 綁定鍵盤 Enter 事件
         document.getElementById('admin-pwd').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 verifyPassword();
